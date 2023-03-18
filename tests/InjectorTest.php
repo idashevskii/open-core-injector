@@ -72,11 +72,12 @@ final class InjectorTest extends TestCase {
     $this->assertTrue($serviceB === $serviceAB->serviceB);
   }
 
-  public function testRegister() {
+  public function testSettingArbitraryObject() {
     $service = new NoConstructorService();
-    $this->injector->register($service);
+    $id = 'my-service';
+    $this->injector->set($id, $service);
 
-    $this->assertTrue($service === $this->injector->get(NoConstructorService::class));
+    $this->assertTrue($service === $this->injector->get($id));
   }
 
 }

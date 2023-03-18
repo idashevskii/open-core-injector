@@ -55,8 +55,8 @@ final class Injector implements ContainerInterface {
     return $this->map[$id];
   }
 
-  public function register(object $object) {
-    $this->map[$object::class] = $object;
+  public function set(string $id, object $object) {
+    $this->map[$id] = $object;
   }
 
   public function has(string $id): bool {
