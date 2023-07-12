@@ -17,7 +17,8 @@ use OpenCore\Services\{
   NoConstructorService,
   ServiceA,
   ServiceB,
-  ServiceAB
+  ServiceAB,
+  ServiceParams,
 };
 
 final class InjectorTest extends TestCase {
@@ -35,7 +36,7 @@ final class InjectorTest extends TestCase {
 
   public function testNotFoundClass() {
     $this->expectException(InjectorNotFoundException::class);
-    $this->injector->get('Not/Existsing/Class');
+    $this->injector->get('Not\Existsing\Class');
   }
 
   public function testInjectService() {
@@ -78,6 +79,25 @@ final class InjectorTest extends TestCase {
     $this->injector->set($id, $service);
 
     $this->assertTrue($service === $this->injector->get($id));
+  }
+
+  public function testInjectScalars() {
+    $config1 = 'str';
+    $config2 = 1023;
+    $this->injector->set('config1', $config1);
+    $this->injector->set('config2', $config2);
+
+    $service = $this->injector->get(ServiceParams::class);
+
+    $this->assertTrue($service->configA === $config1);
+    $this->assertTrue($service->configB === $config2);
+  }
+
+  public function testInjectMissingScalars() {
+    $this->expectException(InjectorNotFoundException::class);
+    $config1 = 'str';
+    $this->injector->set('config1', $config1);
+    $this->injector->get(ServiceParams::class);
   }
 
 }

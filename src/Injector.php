@@ -36,11 +36,17 @@ final class Injector implements ContainerInterface {
       $params = [];
       foreach ($rConstr->getParameters() as $rParam) {
         /* @var $rParam \ReflectionParameter */
-        $rType = $rParam->getType();
-        if (!$rType) {
-          throw new InjectorInvalidParamException("Can not instantiate $class: type for param $rParam not specified");
+        $attrs=$rParam->getAttributes(Inject::class);
+        if($attrs){
+          $id=$attrs[0]->getArguments()[0];
+        }else{
+          $rType = $rParam->getType();
+          if (!$rType) {
+            throw new InjectorInvalidParamException("Can not instantiate $class: type for param $rParam not specified");
+          }
+          $id=(string) $rType;
         }
-        $params[] = $this->get((string) $rType);
+        $params[] = $this->get($id);
       }
       return $rClass->newInstanceArgs($params);
     } else {
@@ -55,8 +61,8 @@ final class Injector implements ContainerInterface {
     return $this->map[$id];
   }
 
-  public function set(string $id, object $object) {
-    $this->map[$id] = $object;
+  public function set(string $id, mixed $value) {
+    $this->map[$id] = $value;
   }
 
   public function has(string $id): bool {
