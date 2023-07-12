@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * @license   MIT
@@ -16,6 +18,9 @@ use OpenCore\Inject;
 class ServiceParams {
 
   public function __construct(
+      public ServiceA $serviceA,
+      public ServiceB $serviceB,
+      public ServiceAB $serviceAB,
       #[Inject('config1')] public string $configA,
       #[Inject('config2')] public int $configB,
   ) {

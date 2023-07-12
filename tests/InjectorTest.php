@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * @license   MIT
@@ -98,6 +100,24 @@ final class InjectorTest extends TestCase {
     $config1 = 'str';
     $this->injector->set('config1', $config1);
     $this->injector->get(ServiceParams::class);
+  }
+
+  public function testInstantiate() {
+    $config1 = 'str';
+    $config2 = 1023;
+    $this->injector->set('config1', $config1);
+    $this->injector->set('config2', $config2);
+
+    $service = null;
+    /** @var ServiceParams $service */
+    for ($i = 0; $i < 1000; $i++) { // should use cache so it should be fast
+      $service = $this->injector->instantiate(ServiceParams::class);
+    }
+    $this->assertInstanceOf(ServiceA::class, $service->serviceA);
+    $this->assertInstanceOf(ServiceB::class, $service->serviceB);
+    $this->assertInstanceOf(ServiceAB::class, $service->serviceAB);
+    $this->assertTrue($service->configA === $config1);
+    $this->assertTrue($service->configB === $config2);
   }
 
 }

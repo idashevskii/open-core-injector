@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * @license   MIT
@@ -12,5 +14,9 @@
 namespace OpenCore\Services;
 
 class ServiceB {
-  public function __construct() {}
+
+  public function __construct() {
+    
+  }
+
 }

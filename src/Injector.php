@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * @license   MIT
@@ -16,47 +18,78 @@ use Psr\Container\ContainerInterface;
 final class Injector implements ContainerInterface {
 
   private array $map = [];
+  private array $cache = [];
 
-  private function __construct() {}
+  private function __construct() {
+    
+  }
 
   public static function create() {
     return new Injector();
   }
 
-  private function instantiate(string $class) {
+  private static function mapParamsToIds(string $class, \ReflectionMethod $method) {
+    $ret = [];
+    foreach ($method->getParameters() as $rParam) {
+      /* @var $rParam \ReflectionParameter */
+      $attrs = $rParam->getAttributes(Inject::class);
+      if ($attrs) {
+        $id = $attrs[0]->getArguments()[0];
+      } else {
+        $rType = $rParam->getType();
+        if (!$rType) {
+          throw new InjectorInvalidParamException("Can not instantiate $class: type for param $rParam not specified");
+        }
+        $id = (string) $rType;
+      }
+      $ret[] = $id;
+    }
+    return $ret;
+  }
+
+  public function instantiate(string $class, bool $noCache = false) {
     if ($class === self::class) {
       return $this;
     }
     if (!class_exists($class)) {
       throw new InjectorNotFoundException("Can not find class $class");
     }
-    $rClass = new \ReflectionClass($class);
-    $rConstr = $rClass->getConstructor();
-    if ($rConstr) {
-      $params = [];
-      foreach ($rConstr->getParameters() as $rParam) {
-        /* @var $rParam \ReflectionParameter */
-        $attrs=$rParam->getAttributes(Inject::class);
-        if($attrs){
-          $id=$attrs[0]->getArguments()[0];
-        }else{
-          $rType = $rParam->getType();
-          if (!$rType) {
-            throw new InjectorInvalidParamException("Can not instantiate $class: type for param $rParam not specified");
-          }
-          $id=(string) $rType;
+    if ($noCache) {
+      $rClass = new \ReflectionClass($class);
+      $rConstr = $rClass->getConstructor();
+      if ($rConstr) {
+        $params = [];
+        foreach (self::mapParamsToIds($class, $rConstr) as $id) {
+          $params[] = $this->get($id);
         }
-        $params[] = $this->get($id);
+        return $rClass->newInstanceArgs($params);
+      } else {
+        return $rClass->newInstance();
       }
-      return $rClass->newInstanceArgs($params);
     } else {
-      return $rClass->newInstance();
+      if (!isset($this->cache[$class])) {
+        $rClass = new \ReflectionClass($class);
+        $rConstr = $rClass->getConstructor();
+        $paramIds = $rConstr ? self::mapParamsToIds($class, $rConstr) : null;
+        $this->cache[$class] = [$rClass, $rConstr, $paramIds];
+      }
+      list($rClass, $rConstr, $paramIds) = $this->cache[$class];
+      if ($rConstr) {
+        $params = [];
+        foreach ($paramIds as $id) {
+          $params[] = $this->get($id);
+        }
+        return $rClass->newInstanceArgs($params);
+      } else {
+        return $rClass->newInstance();
+      }
     }
   }
 
   public function get(string $id) {
     if (!isset($this->map[$id])) {
-      $this->map[$id] = $this->instantiate($id);
+      // no needs in cache for singletons
+      $this->map[$id] = $this->instantiate($id, noCache: true);
     }
     return $this->map[$id];
   }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * @license   MIT
@@ -15,5 +17,9 @@ use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final class Inject implements ContainerInterface {
-  private function __construct(public string $id) {}
+
+  private function __construct(public string $id) {
+    
+  }
+
 }

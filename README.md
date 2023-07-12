@@ -5,5 +5,6 @@ PSR complaint dependency injectiion framework
 - Dependency resolution based on constructor parameters.
 - Injecting instantiated objects by parameter class.
 - Injecting any value by arbitrary string token.
+- Optimized multiple instantiation
 
 See usage examples [here](tests/InjectorTest.php)
