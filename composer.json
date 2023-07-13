@@ -3,6 +3,9 @@
   "description": "PSR complaint dependency injectiion framework",
   "type": "library",
   "license": "MIT",
+  "scripts": {
+    "test": "phpunit ./tests"
+  },
   "autoload": {
     "psr-4": {
       "OpenCore\\": "src/"
