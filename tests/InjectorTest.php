@@ -120,4 +120,16 @@ final class InjectorTest extends TestCase {
     $this->assertTrue($service->configB === $config2);
   }
 
+  public function testAliasChain() {
+    $expected = 123;
+    $this->injector->set('a', $expected);
+    $this->injector->alias('b', 'a');
+    $this->injector->alias('c', 'b');
+    $this->injector->alias('d', 'c');
+
+    $actual = $this->injector->get('d');
+
+    $this->assertEquals($expected, $actual);
+  }
+
 }

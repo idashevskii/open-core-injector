@@ -19,6 +19,7 @@ final class Injector implements ContainerInterface {
 
   private array $map = [];
   private array $cache = [];
+  private array $aliases = [];
 
   private function __construct() {
     
@@ -86,10 +87,15 @@ final class Injector implements ContainerInterface {
     }
   }
 
+  public function alias(string $fromId, string $toId) {
+    $this->aliases[$fromId] = $toId;
+  }
+
   public function get(string $id) {
     if (!isset($this->map[$id])) {
-      // no needs in cache for singletons
-      $this->map[$id] = $this->instantiate($id, noCache: true);
+      $this->map[$id] = isset($this->aliases[$id]) ?
+          $this->get($this->aliases[$id]) : // recursively resolve alias
+          $this->instantiate($this->aliases[$id] ?? $id, noCache: true); // no needs in cache for singletons
     }
     return $this->map[$id];
   }
